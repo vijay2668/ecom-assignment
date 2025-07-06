@@ -4,7 +4,7 @@ import { DualRangeSlider } from "@/components/ui/dual-range-slider";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export const Sidebar = () => {
   const { data: categories = ["All"] } = useQuery({
@@ -39,15 +39,23 @@ export const Sidebar = () => {
     router.replace(`?${params.toString()}`);
   };
 
-  const handlePriceRange = (range: [number, number]) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (range.join("-") !== "0-1000") {
-      params.set("price", `${range[0]}-${range[1]}`);
-    } else {
-      params.delete("price");
-    }
-    router.replace(`?${params.toString()}`);
-  };
+  // Debounce for price range routing and Update price in URL
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debouncedSetPriceRange = useCallback(
+    (range: [number, number]) => {
+      debounceRef.current = setTimeout(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (range.join("-") !== "0-1000") {
+          params.set("price", `${range[0]}-${range[1]}`);
+        } else {
+          params.delete("price");
+        }
+        router.replace(`?${params.toString()}`);
+      }, 500);
+      return () => debounceRef.current && clearTimeout(debounceRef.current);
+    },
+    [router, searchParams]
+  );
 
   return (
     <aside className="w-full lg:w-64 bg-primary p-6 rounded-lg shadow-card">
@@ -93,7 +101,7 @@ export const Sidebar = () => {
             label={(value) => value}
             value={newPriceRange as [number, number]}
             onValueChange={(value) => {
-              handlePriceRange([value[0], value[1]]);
+              debouncedSetPriceRange([value[0], value[1]]);
               setNewPriceRange([value[0], value[1]]);
             }}
             max={1000}

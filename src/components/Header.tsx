@@ -6,7 +6,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Search, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export const Header = () => {
   const [newSearchQuery, setNewSearchQuery] = useState("");
@@ -14,15 +14,23 @@ export const Header = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const handleSearchQuery = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value !== "") {
-      params.set("q", value);
-    } else {
-      params.delete("q");
-    }
-    router.replace(`?${params.toString()}`);
-  };
+  // Debounce for searchQuery routing and show searched product by title and category
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceSetSearchQuery = useCallback(
+    (value: string) => {
+      debounceRef.current = setTimeout(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value !== "") {
+          params.set("q", value);
+        } else {
+          params.delete("q");
+        }
+        router.replace(`?${params.toString()}`);
+      }, 500);
+      return () => debounceRef.current && clearTimeout(debounceRef.current);
+    },
+    [router, searchParams]
+  );
 
   const { itemCount } = useCart();
 
@@ -44,7 +52,7 @@ export const Header = () => {
                 placeholder="Search for products..."
                 value={newSearchQuery}
                 onChange={(e) => {
-                  handleSearchQuery(e.target.value);
+                  debounceSetSearchQuery(e.target.value);
                   setNewSearchQuery(e.target.value);
                 }}
                 className="pl-10 bg-white border-white/20 focus:border-white/40 text-foreground"
