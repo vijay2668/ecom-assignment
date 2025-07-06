@@ -1,26 +1,24 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Product, useCart } from "@/contexts/CartContext";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
-interface Product {
-  id: string;
-  title: string;
-  price: number;
-  image: string;
-  category: string;
-  rating?: number;
-  description: string;
-  quantity: number;
-}
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+  };
+
   return (
     <Link href={`/product/${product.id}`}>
       <Card className="group hover:shadow-hover transition-all duration-300 bg-gradient-card border-border/50 overflow-hidden">
@@ -38,7 +36,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Product Info */}
           <div className="p-4 space-y-3">
-            <h3 className="font-medium text-card-foreground group-hover:text-primary transition-colors">
+            <h3 className="truncate font-medium text-card-foreground group-hover:text-primary transition-colors">
               {product.title}
             </h3>
 
@@ -73,6 +71,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
             {/* Add to Cart Button */}
             <Button
+              onClick={handleAddToCart}
               className="w-full bg-primary hover:bg-primary-hover text-primary-foreground shadow-sm"
               size="lg"
             >

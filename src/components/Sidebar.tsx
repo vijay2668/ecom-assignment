@@ -2,16 +2,53 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { DualRangeSlider } from "@/components/ui/dual-range-slider";
 import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export const Sidebar = () => {
-  const categories = ["All", "Electronics", "Clothing", "Home"];
+  const { data: categories = ["All"] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async (): Promise<string[]> => {
+      const response = await fetch(
+        "https://fakestoreapi.com/products/categories"
+      );
+      return ["All", ...(await response.json())];
+    }
+  });
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Read current filters from URL
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [newPriceRange, setNewPriceRange] = useState<[number, number]>([
-    0, 1000
-  ]);
+  const selectedCategory = searchParams.get("category") || "All";
+  const priceParam = searchParams.get("price") || "0-1000";
+  const priceRange = priceParam.split("-").map(Number);
+  const [newPriceRange, setNewPriceRange] = useState<[number, number]>(
+    priceRange as [number, number]
+  );
+
+  // Update category in URL
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (checked && category !== "All") {
+      params.set("category", category);
+    } else {
+      params.delete("category");
+    }
+    router.replace(`?${params.toString()}`);
+  };
+
+  const handlePriceRange = (range: [number, number]) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (range.join("-") !== "0-1000") {
+      params.set("price", `${range[0]}-${range[1]}`);
+    } else {
+      params.delete("price");
+    }
+    router.replace(`?${params.toString()}`);
+  };
+
   return (
     <aside className="w-full lg:w-64 bg-primary p-6 rounded-lg shadow-card">
       <h2 className="text-lg font-semibold text-primary-foreground mb-6">
@@ -29,7 +66,9 @@ export const Sidebar = () => {
               <Checkbox
                 id={category}
                 checked={selectedCategory === category}
-                onCheckedChange={() => setSelectedCategory(category)}
+                onCheckedChange={(checked) =>
+                  handleCategoryChange(category, checked as boolean)
+                }
                 className="rounded-full border-primary-foreground/30 data-[state=checked]:border-3 data-[state=checked]:bg-transparent data-[state=checked]:border-primary-foreground"
               />
               <Label
@@ -54,6 +93,7 @@ export const Sidebar = () => {
             label={(value) => value}
             value={newPriceRange as [number, number]}
             onValueChange={(value) => {
+              handlePriceRange([value[0], value[1]]);
               setNewPriceRange([value[0], value[1]]);
             }}
             max={1000}

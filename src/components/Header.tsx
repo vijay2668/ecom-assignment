@@ -1,12 +1,30 @@
 "use client";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCart } from "@/contexts/CartContext";
 import { Search, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export const Header = () => {
   const [newSearchQuery, setNewSearchQuery] = useState("");
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const handleSearchQuery = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value !== "") {
+      params.set("q", value);
+    } else {
+      params.delete("q");
+    }
+    router.replace(`?${params.toString()}`);
+  };
+
+  const { itemCount } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-primary shadow-md">
@@ -26,6 +44,7 @@ export const Header = () => {
                 placeholder="Search for products..."
                 value={newSearchQuery}
                 onChange={(e) => {
+                  handleSearchQuery(e.target.value);
                   setNewSearchQuery(e.target.value);
                 }}
                 className="pl-10 bg-white border-white/20 focus:border-white/40 text-foreground"
@@ -39,6 +58,14 @@ export const Header = () => {
               <Button size="lg" variant="secondary">
                 <ShoppingCart className="h-5 w-5" />
                 <span className="hidden sm:inline">Cart</span>
+                {itemCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-5"
+                  >
+                    {itemCount}
+                  </Badge>
+                )}
               </Button>
             </Link>
 

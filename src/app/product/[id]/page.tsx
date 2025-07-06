@@ -2,32 +2,30 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Product, useCart } from "@/contexts/CartContext";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { use, useState } from "react";
-
-interface Product {
-  id: string;
-  title: string;
-  price: number;
-  image: string;
-  category: string;
-  rating?: number;
-  description: string;
-  quantity: number;
-}
 
 export default function ProductIdPage({
   params
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const products: Product[] = [];
   const { id } = use(params);
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
 
-  const product = products.find((p) => p.id === id);
+  const { data: product } = useQuery({
+    queryKey: [`product-${id}`],
+    queryFn: async (): Promise<Product> => {
+      const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+      const data = await response.json();
+      return { ...data, rating: data.rating.rate };
+    }
+  });
 
   if (!product) {
     return (
@@ -42,7 +40,11 @@ export default function ProductIdPage({
     );
   }
 
-  const handleAddToCart = () => {};
+  const handleAddToCart = () => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
