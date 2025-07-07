@@ -1,12 +1,17 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
+import { cn } from "@/lib/utils";
 import { Search, ShoppingCart, User } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
+const Badge = dynamic(
+  () => import("@/components/ui/badge").then((mod) => mod.Badge),
+  { ssr: false }
+);
 
 export const Header = () => {
   const [newSearchQuery, setNewSearchQuery] = useState("");
@@ -63,17 +68,18 @@ export const Header = () => {
           {/* Cart and Profile */}
           <div className="flex items-center gap-2">
             <Link href="/cart">
-              <Button size="lg" variant="secondary">
+              <Button size="lg" variant="secondary" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 <span className="hidden sm:inline">Cart</span>
-                {itemCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-5"
-                  >
-                    {itemCount}
-                  </Badge>
-                )}
+                <Badge
+                  variant="destructive"
+                  className={cn(
+                    itemCount === 0 && "hidden",
+                    "absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-5"
+                  )}
+                >
+                  {itemCount}
+                </Badge>
               </Button>
             </Link>
 

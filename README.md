@@ -2,7 +2,7 @@
 
 _Transform Ideas into Seamless Digital Experiences_
 
-[🔗 Live Demo](https://github.com/vijay2668/ecom-assignment)
+[🔗 Live Demo](https://ecom-assignment-gamma.vercel.app)
 
 ![last-commit](https://img.shields.io/github/last-commit/vijay2668/ecom-assignment?style=flat&logo=git&logoColor=white&color=0080ff)
 ![repo-top-language](https://img.shields.io/github/languages/top/vijay2668/ecom-assignment?style=flat&color=0080ff)
