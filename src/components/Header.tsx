@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
-import { cn } from "@/lib/utils";
 import { Search, ShoppingCart, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -38,6 +37,7 @@ export const Header = () => {
   );
 
   const { itemCount } = useCart();
+  console.log(itemCount);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-primary shadow-md">
@@ -71,15 +71,14 @@ export const Header = () => {
               <Button size="lg" variant="secondary" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 <span className="hidden sm:inline">Cart</span>
-                <Badge
-                  variant="destructive"
-                  className={cn(
-                    itemCount === 0 && "hidden",
-                    "absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-5"
-                  )}
-                >
-                  {itemCount}
-                </Badge>
+                {itemCount !== 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-5"
+                  >
+                    {itemCount}
+                  </Badge>
+                )}
               </Button>
             </Link>
 
